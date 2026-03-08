@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inkwell — Write Like You Mean It</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d0d;
+      --paper: #f5f0e8;
+      --cream: #ede8dc;
+      --amber: #c8873a;
+      --amber-light: #e8a85a;
+      --rust: #9b3a2a;
+      --sage: #4a6741;
+      --muted: #7a7060;
+      --border: rgba(13,13,13,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--amber);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: multiply;
+    }
+    .cursor.big {
+      width: 40px; height: 40px;
+      background: var(--amber-light);
+      opacity: 0.5;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 3rem;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--amber); }
+
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--ink); }
+
+    .nav-cta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      padding: 0.65rem 1.4rem;
+      cursor: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { background: var(--amber); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 5rem 3rem 5rem 3rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--amber);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 5.5vw, 5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.8rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.35s forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 440px;
+      margin-bottom: 2.8rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.5s forwards;
+    }
+
+    .hero-actions {
+      display: flex; align-items: center; gap: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.65s forwards;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--ink);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      padding: 0.9rem 2rem;
+      cursor: none;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      background: var(--amber);
+      border-color: var(--amber);
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--ink); }
+    .btn-ghost svg { transition: transform 0.2s; }
+    .btn-ghost:hover svg { transform: translateX(3px); }
+
+    .hero-stat {
+      margin-top: 4rem;
+      display: flex; gap: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Hero right - editor mockup */
+    .hero-right {
+      display: flex; align-items: center; justify-content: center;
+      padding: 6rem 3rem 5rem 1rem;
+      position: relative;
+    }
+
+    .editor-mockup {
+      width: 100%;
+      max-width: 480px;
+      background: #1a1814;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 24px 24px 0 rgba(13,13,13,0.15), 0 0 80px rgba(200,135,58,0.08);
+      opacity: 0;
+      animation: fadeLeft 0.9s ease 0.6s forwards;
+      position: relative;
+    }
+
+    .editor-bar {
+      background: #141210;
+      padding: 0.8rem 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+    .editor-filename {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      margin-left: 0.8rem;
+    }
+
+    .editor-body {
+      padding: 1.8rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.9;
+    }
+
+    .line { display: flex; gap: 1.5rem; }
+    .ln { color: rgba(255,255,255,0.15); min-width: 1.2rem; text-align: right; user-select: none; }
+    .code-comment { color: #5a5248; }
+    .code-key { color: #c8873a; }
+    .code-str { color: #8fad78; }
+    .code-fn { color: #8ab4c8; }
+    .code-plain { color: rgba(255,255,255,0.75); }
+
+    .ai-suggestion {
+      margin: 0.5rem 0;
+      background: rgba(200,135,58,0.08);
+      border-left: 2px solid var(--amber);
+      padding: 0.6rem 0.8rem;
+      display: flex; gap: 1.5rem;
+      position: relative;
+    }
+    .ai-badge {
+      position: absolute; right: 0.8rem; top: 0.5rem;
+      font-size: 0.6rem;
+      font-family: 'DM Mono', monospace;
+      background: var(--amber);
+      color: var(--ink);
+      padding: 0.15rem 0.4rem;
+      letter-spacing: 0.05em;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 2px; height: 0.85em;
+      background: var(--amber);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+
+    /* Decorative line */
+    .hero-line {
+      position: absolute;
+      left: 0; top: 50%;
+      width: 3rem; height: 1px;
+      background: var(--amber);
+      transform: translateY(-50%);
+    }
+
+    /* MARQUEE */
+    .marquee-section {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 1.1rem 0;
+      overflow: hidden;
+      background: var(--cream);
+    }
+    .marquee-track {
+      display: flex; gap: 4rem;
+      white-space: nowrap;
+      animation: marquee 22s linear infinite;
+    }
+    .marquee-item {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 1rem;
+      flex-shrink: 0;
+    }
+    .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); }
+
+    /* FEATURES */
+    .features {
+      padding: 8rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--amber);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 520px;
+      margin-bottom: 5rem;
+    }
+    .section-title em { font-style: italic; color: var(--amber); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+
+    .feature-card {
+      padding: 2.5rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card:hover { background: var(--cream); }
+    .feature-card:nth-child(3n) { border-right: none; }
+    .feature-card:nth-last-child(-n+3) { border-bottom: none; }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .feature-card:hover .feature-icon {
+      border-color: var(--amber);
+      background: rgba(200,135,58,0.06);
+    }
+
+    .feature-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+    .feature-desc {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* TESTIMONIALS */
+    .testimonials {
+      background: var(--ink);
+      padding: 8rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .testimonials::before {
+      content: '"';
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: 30rem;
+      line-height: 1;
+      color: rgba(255,255,255,0.02);
+      top: -5rem; left: -2rem;
+      pointer-events: none;
+    }
+
+    .testimonials-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .testimonials .section-label { color: var(--amber); }
+
+    .testimonials .section-title {
+      color: var(--paper);
+      margin-bottom: 4rem;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .testimonial-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem;
+      transition: border-color 0.25s;
+    }
+    .testimonial-card:hover { border-color: var(--amber); }
+
+    .testimonial-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(245,240,232,0.85);
+      margin-bottom: 1.5rem;
+    }
+
+    .testimonial-author {
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .author-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .author-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.04em;
+    }
+    .author-role {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.04em;
+      margin-top: 0.15rem;
+    }
+
+    /* PRICING */
+    .pricing {
+      padding: 8rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 4rem;
+    }
+
+    .pricing-card {
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(13,13,13,0.1);
+    }
+    .pricing-card.featured {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .pricing-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: var(--amber);
+      color: var(--ink);
+      padding: 0.2rem 0.6rem;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      line-height: 1;
+      margin: 1.2rem 0 0.3rem;
+    }
+    .pricing-price sup {
+      font-size: 1.2rem;
+      vertical-align: top;
+      margin-top: 0.5rem;
+      display: inline-block;
+    }
+    .pricing-period {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 2rem;
+    }
+    .pricing-card.featured .pricing-period { color: rgba(245,240,232,0.4); }
+
+    .pricing-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+    .pricing-card.featured .pricing-divider { background: rgba(255,255,255,0.1); }
+
+    .pricing-features { list-style: none; margin-bottom: 2rem; }
+    .pricing-features li {
+      font-size: 0.88rem;
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      display: flex; align-items: center; gap: 0.7rem;
+    }
+    .pricing-card.featured .pricing-features li { color: rgba(245,240,232,0.65); }
+    .pricing-features li::before {
+      content: '→';
+      font-size: 0.75rem;
+      color: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .pricing-btn {
+      display: block; width: 100%;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      border: 1.5px solid var(--ink);
+      color: var(--ink);
+      cursor: none;
+      transition: all 0.2s;
+    }
+    .pricing-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .pricing-card.featured .pricing-btn {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: var(--ink);
+    }
+    .pricing-card.featured .pricing-btn:hover {
+      background: var(--amber-light);
+      border-color: var(--amber-light);
+    }
+
+    /* CTA SECTION */
+    .cta-section {
+      background: var(--cream);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 8rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::after {
+      content: 'WRITE';
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: 20vw;
+      font-weight: 900;
+      color: rgba(13,13,13,0.04);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+      position: relative; z-index: 1;
+    }
+    .cta-title em { font-style: italic; color: var(--amber); }
+
+    .cta-sub {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      position: relative; z-index: 1;
+    }
+
+    .cta-form {
+      display: flex; gap: 0; max-width: 420px;
+      margin: 0 auto;
+      position: relative; z-index: 1;
+      box-shadow: 8px 8px 0 var(--ink);
+    }
+    .cta-input {
+      flex: 1;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      border: 1.5px solid var(--ink);
+      border-right: none;
+      background: var(--paper);
+      color: var(--ink);
+      outline: none;
+    }
+    .cta-input::placeholder { color: var(--muted); }
+    .cta-submit {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--ink);
+      color: var(--paper);
+      border: 1.5px solid var(--ink);
+      padding: 0.9rem 1.4rem;
+      cursor: none;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .cta-submit:hover { background: var(--amber); border-color: var(--amber); }
+
+    /* FOOTER */
+    footer {
+      background: var(--ink);
+      padding: 3rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--paper);
+    }
+    .footer-logo span { color: var(--amber); }
+
+    .footer-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+    .footer-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(245,240,232,0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--amber); }
+
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(245,240,232,0.2);
+      letter-spacing: 0.06em;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeLeft {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Ink<span>well</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <button class="nav-cta">Start Free</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-line"></div>
+    <p class="hero-eyebrow">✦ AI-Powered Writing Studio</p>
+    <h1 class="hero-title">
+      Your thoughts,<br>
+      <em>perfectly</em><br>
+      expressed.
+    </h1>
+    <p class="hero-subtitle">
+      Inkwell is the writing companion that thinks the way you do — then helps you say it better. From first draft to final publish, in half the time.
+    </p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">Start Writing Free</a>
+      <a href="#features" class="btn-ghost">
+        See how it works
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hero-stat">
+      <div>
+        <div class="stat-num">47k+</div>
+        <div class="stat-label">Writers</div>
+      </div>
+      <div>
+        <div class="stat-num">12M</div>
+        <div class="stat-label">Words Written</div>
+      </div>
+      <div>
+        <div class="stat-num">4.9★</div>
+        <div class="stat-label">Avg Rating</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="editor-mockup">
+      <div class="editor-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="editor-filename">chapter-one.ink</span>
+      </div>
+      <div class="editor-body">
+        <div class="line">
+          <span class="ln">1</span>
+          <span class="code-comment">// Morning scene — coastal town</span>
+        </div>
+        <div class="line" style="margin-top:0.4rem">
+          <span class="ln">2</span>
+          <span class="code-plain">The fog </span><span class="code-key">held</span><span class="code-plain"> the harbour</span>
+        </div>
+        <div class="line">
+          <span class="ln">3</span>
+          <span class="code-plain">like a </span><span class="code-str">secret it wasn't</span>
+        </div>
+        <div class="line">
+          <span class="ln">4</span>
+          <span class="code-str">ready to share.</span>
+        </div>
+        <div class="ai-suggestion">
+          <span class="ln" style="color:rgba(200,135,58,0.4)">5</span>
+          <span class="code-fn">The fishing boats rocked gently,</span>
+          <span class="ai-badge">AI</span>
+        </div>
+        <div class="ai-suggestion" style="margin-top:0">
+          <span class="ln" style="color:rgba(200,135,58,0.4)">6</span>
+          <span class="code-fn">their hulls whispering old stories.</span>
+        </div>
+        <div class="line" style="margin-top:0.4rem">
+          <span class="ln">7</span>
+          <span class="code-plain">&nbsp;<span class="cursor-blink"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-dot"></span>Smart Autocomplete</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Tone Rewriter</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Outline Generator</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Grammar & Style</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SEO Optimizer</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Plagiarism Check</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Voice Matching</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Multi-language</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Smart Autocomplete</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Tone Rewriter</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Outline Generator</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Grammar & Style</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SEO Optimizer</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Plagiarism Check</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Voice Matching</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Multi-language</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <p class="section-label reveal">✦ What Inkwell Does</p>
+  <h2 class="section-title reveal">Built for writers who<br><em>refuse to settle.</em></h2>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">✍️</div>
+      <h3 class="feature-title">Voice Matching</h3>
+      <p class="feature-desc">Inkwell learns your unique style across documents and mirrors it in every suggestion — so the AI always sounds like you, never a machine.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🧠</div>
+      <h3 class="feature-title">Context-Aware AI</h3>
+      <p class="feature-desc">Our model reads the full arc of your piece before offering completions. No more suggestions that ignore your narrative direction.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🎯</div>
+      <h3 class="feature-title">Tone Rewriter</h3>
+      <p class="feature-desc">Formal to casual. Academic to punchy. Shift your entire document's tone in one click while preserving every original idea.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">⚡</div>
+      <h3 class="feature-title">Live Outline</h3>
+      <p class="feature-desc">An intelligent sidebar maps your document in real-time, flags structural gaps, and lets you reorganise sections by drag-and-drop.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🔍</div>
+      <h3 class="feature-title">Deep Research</h3>
+      <p class="feature-desc">Highlight a claim and Inkwell searches, verifies, and inserts cited sources — without ever leaving the editor.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🤝</div>
+      <h3 class="feature-title">Live Collaboration</h3>
+      <p class="feature-desc">Real-time co-editing with your team. Leave inline comments, track every revision, and publish together with shared workflows.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-inner">
+    <p class="section-label reveal">✦ What Writers Say</p>
+    <h2 class="section-title reveal">Words from people<br><em>who write for a living.</em></h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">"Inkwell doesn't try to replace my voice — it amplifies it. My first drafts are faster, but they still sound like me. That's incredibly rare."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">M</div>
+          <div>
+            <div class="author-name">Maya Okonkwo</div>
+            <div class="author-role">Novelist & Columnist</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">"I publish three long-form essays a week. Before Inkwell, that was barely sustainable. Now it feels effortless — and the quality has actually improved."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">T</div>
+          <div>
+            <div class="author-name">Thomas Brennan</div>
+            <div class="author-role">Substack Writer, 80k subs</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">"The tone rewriter alone is worth ten times the price. We use it across our entire content team and the consistency it creates is remarkable."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">S</div>
+          <div>
+            <div class="author-name">Sana Mirza</div>
+            <div class="author-role">Head of Content, Fintech Co.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <p class="section-label reveal">✦ Simple Pricing</p>
+  <h2 class="section-title reveal">One price, everything<br><em>you need to write.</em></h2>
+  <div class="pricing-grid">
+    <div class="pricing-card reveal">
+      <div class="pricing-name">Hobbyist</div>
+      <div class="pricing-price"><sup>$</sup>0</div>
+      <div class="pricing-period">forever free</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li>5,000 AI words / month</li>
+        <li>Basic autocomplete</li>
+        <li>1 document workspace</li>
+        <li>Export to PDF</li>
+      </ul>
+      <a href="#" class="pricing-btn">Get Started</a>
+    </div>
+    <div class="pricing-card featured reveal">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="pricing-name">Writer</div>
+      <div class="pricing-price"><sup>$</sup>19</div>
+      <div class="pricing-period">per month, billed annually</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li>Unlimited AI words</li>
+        <li>Voice matching engine</li>
+        <li>Tone rewriter</li>
+        <li>Deep research mode</li>
+        <li>Live outline</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#" class="pricing-btn">Start 14-Day Trial</a>
+    </div>
+    <div class="pricing-card reveal">
+      <div class="pricing-name">Studio</div>
+      <div class="pricing-price"><sup>$</sup>59</div>
+      <div class="pricing-period">per month, up to 10 seats</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li>Everything in Writer</li>
+        <li>Live collaboration</li>
+        <li>Team style guide</li>
+        <li>Admin dashboard</li>
+        <li>Custom integrations</li>
+        <li>Dedicated onboarding</li>
+      </ul>
+      <a href="#" class="pricing-btn">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <p class="section-label" style="position:relative;z-index:1">✦ Begin Today</p>
+  <h2 class="cta-title">Your best writing<br>is <em>still ahead of you.</em></h2>
+  <p class="cta-sub">Join 47,000 writers already using Inkwell. No credit card required.</p>
+  <div class="cta-form">
+    <input class="cta-input" type="email" placeholder="your@email.com" />
+    <button class="cta-submit">Get Access →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Ink<span>well</span></div>
+  <ul class="footer-links">
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Blog</a></li>
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Inkwell Inc.</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, input').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
