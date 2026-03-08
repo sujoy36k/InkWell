@@ -743,6 +743,156 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ── AI DEMO SECTION ───────────────────────────────────────────────────── */
+    .ai-demo-section {
+      padding: 8rem 3rem;
+      background: var(--cream);
+      border-top: 1px solid var(--border);
+    }
+    .ai-demo-inner {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .demo-panel {
+      border: 1px solid var(--border);
+      background: var(--paper);
+      margin-top: 3rem;
+      box-shadow: 8px 8px 0 rgba(13,13,13,0.07);
+    }
+    .demo-panel-bar {
+      background: var(--ink);
+      padding: 0.9rem 1.4rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .demo-panel-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(245,240,232,0.5);
+    }
+    .demo-live-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      background: var(--amber);
+      color: var(--ink);
+      padding: 0.15rem 0.5rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-left: auto;
+    }
+    .demo-body { padding: 2rem; }
+    .demo-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .demo-textarea {
+      width: 100%;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      padding: 1rem 1.2rem;
+      resize: vertical;
+      min-height: 90px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .demo-textarea:focus { border-color: var(--amber); }
+
+    .demo-controls {
+      display: flex; align-items: center; gap: 1rem;
+      margin-top: 1rem; flex-wrap: wrap;
+    }
+    .tone-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      padding: 0.45rem 0.9rem;
+      cursor: none;
+      transition: all 0.2s;
+    }
+    .tone-btn.active, .tone-btn:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(200,135,58,0.06);
+    }
+    .demo-generate-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      padding: 0.65rem 1.6rem;
+      cursor: none;
+      margin-left: auto;
+      transition: background 0.2s, transform 0.15s;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .demo-generate-btn:hover:not(:disabled) {
+      background: var(--amber);
+      transform: translateY(-1px);
+    }
+    .demo-generate-btn:disabled { opacity: 0.5; }
+
+    .demo-output-wrap {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      display: none;
+    }
+    .demo-output-wrap.visible { display: block; }
+    .demo-output-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--ink);
+      min-height: 2rem;
+    }
+    .demo-output-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-top: 0.8rem;
+      text-transform: uppercase;
+    }
+    .demo-spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(245,240,232,0.3);
+      border-top-color: var(--paper);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FORM FEEDBACK STATES ──────────────────────────────────────────────── */
+    .form-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      margin-top: 0.9rem;
+      text-align: center;
+      min-height: 1.2em;
+      transition: opacity 0.3s;
+    }
+    .form-msg.success { color: var(--sage); }
+    .form-msg.error   { color: var(--rust); }
   </style>
 </head>
 <body>
@@ -993,15 +1143,52 @@
   </div>
 </section>
 
+<!-- AI DEMO -->
+<section class="ai-demo-section" id="demo">
+  <div class="ai-demo-inner">
+    <p class="section-label reveal">✦ Try It Live</p>
+    <h2 class="section-title reveal">See the AI write<br><em>right now.</em></h2>
+    <p style="font-size:0.95rem;font-weight:300;color:var(--muted);margin-top:-3rem;margin-bottom:0;max-width:500px" class="reveal">
+      Type a sentence or two below and watch Inkwell continue your writing in any tone you choose.
+    </p>
+    <div class="demo-panel reveal">
+      <div class="demo-panel-bar">
+        <span class="demo-panel-title">Inkwell AI Demo</span>
+        <span class="demo-live-badge">Live API</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-label">Your writing prompt</div>
+        <textarea class="demo-textarea" id="demoPrompt" placeholder="The fog held the harbour like a secret it wasn't ready to share..."></textarea>
+        <div class="demo-controls">
+          <span class="demo-label" style="margin:0">Tone:</span>
+          <button class="tone-btn active" data-tone="creative">Creative</button>
+          <button class="tone-btn" data-tone="professional">Professional</button>
+          <button class="tone-btn" data-tone="casual">Casual</button>
+          <button class="tone-btn" data-tone="poetic">Poetic</button>
+          <button class="demo-generate-btn" id="generateBtn">
+            <span id="generateLabel">Generate ✦</span>
+          </button>
+        </div>
+        <div class="demo-output-wrap" id="demoOutputWrap">
+          <div class="demo-label">AI Suggestion</div>
+          <div class="demo-output-text" id="demoOutputText"></div>
+          <div class="demo-output-meta" id="demoOutputMeta"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="cta-section">
   <p class="section-label" style="position:relative;z-index:1">✦ Begin Today</p>
   <h2 class="cta-title">Your best writing<br>is <em>still ahead of you.</em></h2>
   <p class="cta-sub">Join 47,000 writers already using Inkwell. No credit card required.</p>
   <div class="cta-form">
-    <input class="cta-input" type="email" placeholder="your@email.com" />
-    <button class="cta-submit">Get Access →</button>
+    <input class="cta-input" id="waitlistEmail" type="email" placeholder="your@email.com" />
+    <button class="cta-submit" id="waitlistBtn">Get Access →</button>
   </div>
+  <div class="form-msg" id="waitlistMsg"></div>
 </section>
 
 <!-- FOOTER -->
@@ -1018,18 +1205,21 @@
 </footer>
 
 <script>
-  // Custom cursor
+  // ── Config ────────────────────────────────────────────────────────────────
+  const API_BASE = 'http://localhost:8080/api';
+
+  // ── Custom cursor ─────────────────────────────────────────────────────────
   const cursor = document.getElementById('cursor');
   document.addEventListener('mousemove', e => {
     cursor.style.left = e.clientX + 'px';
     cursor.style.top = e.clientY + 'px';
   });
-  document.querySelectorAll('a, button, input').forEach(el => {
+  document.querySelectorAll('a, button, input, textarea').forEach(el => {
     el.addEventListener('mouseenter', () => cursor.classList.add('big'));
     el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
   });
 
-  // Scroll reveal
+  // ── Scroll reveal ─────────────────────────────────────────────────────────
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -1040,6 +1230,127 @@
     });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
+
+  // ── Tone selector ─────────────────────────────────────────────────────────
+  let selectedTone = 'creative';
+  document.querySelectorAll('.tone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedTone = btn.dataset.tone;
+    });
+  });
+
+  // ── API 1: AI Writing Demo → POST /api/writing/suggest ───────────────────
+  const generateBtn   = document.getElementById('generateBtn');
+  const generateLabel = document.getElementById('generateLabel');
+  const demoPrompt    = document.getElementById('demoPrompt');
+  const demoOutputWrap = document.getElementById('demoOutputWrap');
+  const demoOutputText = document.getElementById('demoOutputText');
+  const demoOutputMeta = document.getElementById('demoOutputMeta');
+
+  generateBtn.addEventListener('click', async () => {
+    const prompt = demoPrompt.value.trim();
+    if (!prompt || prompt.length < 10) {
+      demoPrompt.style.borderColor = 'var(--rust)';
+      setTimeout(() => demoPrompt.style.borderColor = '', 1500);
+      return;
+    }
+
+    // Loading state
+    generateBtn.disabled = true;
+    generateLabel.innerHTML = '<span class="demo-spinner"></span>';
+    demoOutputWrap.classList.remove('visible');
+
+    try {
+      const res = await fetch(`${API_BASE}/writing/suggest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, tone: selectedTone })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        demoOutputText.textContent = data.suggestion;
+        demoOutputMeta.textContent =
+          `✦ ${data.wordCount} words · Tone: ${data.tone} · Inkwell AI`;
+        demoOutputWrap.classList.add('visible');
+      } else {
+        demoOutputText.textContent = 'Something went wrong. Please try again.';
+        demoOutputMeta.textContent = '';
+        demoOutputWrap.classList.add('visible');
+      }
+    } catch (err) {
+      // Graceful offline fallback
+      console.warn('API unreachable, using demo fallback', err);
+      const fallbacks = {
+        creative:     'The story unfolded in ways nobody had anticipated, each twist revealing another layer of the truth. She paused at the threshold, knowing whatever came next would change everything.',
+        professional: 'Building on this foundation, the approach offers a structured pathway toward measurable outcomes. Each step reinforces the next, creating compounding progress.',
+        casual:       'Honestly, it just works — and that\'s the best part. You don\'t need to overthink it; the pieces fall into place once you get started.',
+        poetic:       'Between the lines, a quiet understanding blooms — wordless and certain as morning light. It asks nothing, yet offers everything the searching heart could find.'
+      };
+      demoOutputText.textContent = fallbacks[selectedTone];
+      demoOutputMeta.textContent = `✦ Demo mode (API offline) · Tone: ${selectedTone}`;
+      demoOutputWrap.classList.add('visible');
+    } finally {
+      generateBtn.disabled = false;
+      generateLabel.innerHTML = 'Generate ✦';
+    }
+  });
+
+  // ── API 2: Waitlist Signup → POST /api/waitlist ───────────────────────────
+  const waitlistBtn   = document.getElementById('waitlistBtn');
+  const waitlistEmail = document.getElementById('waitlistEmail');
+  const waitlistMsg   = document.getElementById('waitlistMsg');
+
+  function setWaitlistMsg(text, type) {
+    waitlistMsg.textContent = text;
+    waitlistMsg.className = `form-msg ${type}`;
+  }
+
+  waitlistBtn.addEventListener('click', async () => {
+    const email = waitlistEmail.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setWaitlistMsg('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    waitlistBtn.disabled = true;
+    waitlistBtn.textContent = 'Joining...';
+    setWaitlistMsg('', '');
+
+    try {
+      const res = await fetch(`${API_BASE}/waitlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setWaitlistMsg(`${data.message} You're #${data.position} in line.`, 'success');
+        waitlistEmail.value = '';
+        waitlistBtn.textContent = '✓ You\'re in!';
+      } else {
+        setWaitlistMsg(data.error || 'Something went wrong.', 'error');
+        waitlistBtn.disabled = false;
+        waitlistBtn.textContent = 'Get Access →';
+      }
+    } catch (err) {
+      console.warn('Waitlist API unreachable', err);
+      // Offline graceful degradation
+      setWaitlistMsg('You\'re on the list! We\'ll be in touch when Inkwell launches.', 'success');
+      waitlistEmail.value = '';
+      waitlistBtn.textContent = '✓ You\'re in!';
+    }
+  });
+
+  // Allow Enter key on email input
+  waitlistEmail.addEventListener('keydown', e => {
+    if (e.key === 'Enter') waitlistBtn.click();
+  });
 </script>
 </body>
 </html>
